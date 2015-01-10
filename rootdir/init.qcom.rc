@@ -57,11 +57,11 @@ on init
 
     # Bluetooth address setting
     setprop ro.bt.bdaddr_path "/data/etc/bluetooth_bdaddr"
-    chown bluetooth net_bt_stack ro.bt.bdaddr_path
+    chown bluetooth bluetooth ${ro.bt.bdaddr_path}
 
     # bluetooth LPM
-    chown bluetooth net_bt_stack /proc/bluetooth/wakeup/proto
-    chmod 0664 /proc/bluetooth/wakeup/proto
+    chown bluetooth bluetooth /proc/bluetooth/sleep/lpm
+    chown bluetooth bluetooth /proc/bluetooth/sleep/btwrite
 
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
 
@@ -88,14 +88,8 @@ on init
     setprop persist.sys.wfd.virtual 0
 
 on fs
-    mkdir /mnt/idd 0751 sony_idd sony_idd
-
     mount_all ./fstab.qcom
     setprop ro.crypto.fuse_sdcard true
-
-    chown sony_idd sony_idd /mnt/idd
-    chmod 0751 /mnt/idd
-
     mkdir /lta-label 0555 system system
     wait /dev/block/platform/msm_sdcc.1/by-name/LTALabel
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/LTALabel /lta-label nosuid nodev noatime noexec ro barrier=0
@@ -103,20 +97,15 @@ on fs
     chmod 0555 /lta-label
 
     chmod 0755 /data/etc
-    class_start sony_ta
-    exec /sbin/wait4tad_static
     exec /system/bin/taimport
 
-    restorecon -R /data/etc
+    restorecon_recursive /data/etc
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
 
     write /sys/kernel/boot_adsp/boot 1
-
-    start ta_qmi_service
-    start sct_service
 
     # Run pre_hw_config.sh before entering charge only mode.
     exec /system/bin/sh /system/etc/pre_hw_config.sh
@@ -130,13 +119,13 @@ on boot
     write /sys/module/msm_thermal/core_control/enabled 1
 
     write /sys/module/qpnp_power_on/parameters/forcecrash_on 1
-    exec /system/bin/btnvtool -O
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
-    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
     chmod 0660 /sys/class/rfkill/rfkill0/state
-    chown bluetooth net_bt_stack /dev/ttyHS0
+    chown bluetooth bluetooth /dev/ttyHS0
     chmod 0660 /dev/ttyHS0
-    chown bluetooth net_bt_stack /sys/devices/platform/msm_serial_hs.0/clock
+    chown bluetooth bluetooth /sys/devices/platform/msm_serial_hs.0/clock
     chmod 0660 /sys/devices/platform/msm_serial_hs.0/clock
 
     # Create QMUX deamon socket area
@@ -144,7 +133,7 @@ on boot
     chmod 2770 /dev/socket/qmux_radio
     mkdir /dev/socket/qmux_audio 0770 media audio
     chmod 2770 /dev/socket/qmux_audio
-    mkdir /dev/socket/qmux_bluetooth 0770 bluetooth net_bt_stack
+    mkdir /dev/socket/qmux_bluetooth 0770 bluetooth bluetooth
     chmod 2770 /dev/socket/qmux_bluetooth
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
@@ -214,6 +203,11 @@ on boot
     setprop net.tcp.usercfg.wifi       1
     setprop net.tcp.usercfg.lte        1
 
+    # Assign TCP buffer thresholds to be ceiling value of technology maximums
+    # Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  2097152
+    write /proc/sys/net/core/wmem_max  2097152
+
     chmod 660 /dev/rtc0
     chown system system /dev/rtc0
 
@@ -262,6 +256,16 @@ on boot
 
     chown system /sys/devices/virtual/timed_output/vibrator/vtg_level
 
+    # charger
+    chown root system /sys/module/qpnp_charger/parameters/charger_monitor
+    chown root system /sys/class/power_supply/battery/input_current_max
+    chown root system /sys/class/power_supply/battery/input_current_trim
+    chown root system /sys/class/power_supply/battery/voltage_min
+    chmod 0644 /sys/module/qpnp_charger/parameters/charger_monitor
+    chmod 0644 /sys/class/power_supply/battery/input_current_max
+    chmod 0644 /sys/class/power_supply/battery/input_current_trim
+    chmod 0644 /sys/class/power_supply/battery/voltage_min
+
     # NFC
     # Symlink for compability
     symlink /dev/pn547 /dev/pn544
@@ -290,7 +294,6 @@ on post-fs-data
 
     # Update WIFI MAC address
     mkdir /data/misc/wifi/prima 0775 wifi wifi
-    exec /system/bin/mac-update
 
     mkdir /data/credmgr 0700 system system
     mkdir /data/tombstones 0755 system system
@@ -399,24 +402,25 @@ on charger
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
 
+# Update Wi-Fi MAC address
+service mac-update /system/bin/mac-update
+    class late_start
+    user wifi
+    oneshot
+
 # QMUX must be in multiple groups to support external process connections
 service qmuxd /system/bin/qmuxd
     class main
     user radio
-    group radio audio bluetooth gps qcom_diag net_bt_stack
+    group radio audio bluetooth gps qcom_diag
 
 # SONY: TrimArea Daemon
 # Last 2 args: start block(blk size 128k), number of blocks(partitionsize(kb)/128(kb))
-service tad_static /sbin/tad_static /dev/block/mmcblk0 1,16
+service tad_static /system/bin/tad_static /dev/block/mmcblk0 1,16
     user root
     group root
-    socket tad stream 0660 system sony_ta
-    class sony_ta
-
-service updatemiscta /system/bin/updatemiscta
-    class main
-    user root
-    oneshot
+    socket tad stream 0660 system system
+    class core
 
 service netmgrd /system/bin/netmgrd
     class main
@@ -453,8 +457,7 @@ service qseecomd /system/bin/qseecomd
 
 service p2p_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
-    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
-    -O/data/misc/wifi/sockets -N \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf -N \
     -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
     -I/system/etc/wifi/p2p_supplicant_overlay.conf \
     -puse_p2p_group_interface=1 -e/data/misc/wifi/entropy.bin \
@@ -471,7 +474,6 @@ service p2p_supplicant /system/bin/wpa_supplicant \
 service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
     -I/system/etc/wifi/wpa_supplicant_overlay.conf \
-    -O/data/misc/wifi/sockets \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     #   we will start as root and wpa_supplicant will switch to user wifi
     #   after setting up the capabilities required for WEXT
@@ -574,26 +576,21 @@ service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
     disabled
     oneshot
 
-service illumination /system/bin/illumination_service
-    socket illumination stream 0660 system camera
-    class main
-    user root
-
 # Secure Config Transfer service
 service sct_service /system/bin/sct_service
     user root
-    disabled
+    class main
 
 # Trim Area QMI service
 service ta_qmi_service /system/bin/ta_qmi_service
     user root
-    disabled
+    class main
 
-# Start system_monitor
-service system_monitor /system/bin/system_monitor
-    socket sysmon stream 0660 root system
-    class core
+# Thermal Manager service
+service thermanager /system/bin/thermanager /system/etc/thermanager.xml
+    class main
     user root
+    group root
 
 service rmt_storage /system/bin/rmt_storage
     class core
@@ -619,7 +616,7 @@ service qcamerasvr /system/bin/mm-qcamera-daemon
 service sensors /system/bin/sensors.qcom
     class main
     user root
-    group root
+    group sensors radio system
 
 service time_daemon /system/bin/time_daemon
     class late_start
@@ -632,6 +629,10 @@ service setup_fs /system/bin/setup_fs /dev/block/platform/msm_sdcc.1/by-name/use
     user root
     group root
     oneshot
+
+service charger /sbin/healthd -c
+    class charger
+    seclabel u:r:healthd:s0
 
 on property:init.svc.surfaceflinger=running
     start ppd
