@@ -27,6 +27,12 @@ BOARD_KERNEL_CMDLINE  := androidboot.hardware=qcom user_debug=31 msm_rtb.filter=
 BOARD_MKBOOTIMG_ARGS  := --ramdisk_offset 0x02000000 --tags_offset 0x01E00000
 BOARD_KERNEL_SEPARATED_DT := true
 TARGET_DTB_EXTRA_FLAGS := --force-v2
+TARGET_GCC_VERSION_ARM := 4.9-sm
+
+# Validus optimisations
+SYMMETRY := true
+GRAPHITE_OPTS := true
+STRICT_ALIASING := true
 
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "vfs-prerelease"
