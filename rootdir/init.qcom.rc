@@ -97,9 +97,6 @@ on fs
     chmod 0555 /lta-label
 
     chmod 0755 /data/etc
-    exec /system/bin/taimport
-
-    restorecon_recursive /data/etc
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -183,10 +180,6 @@ on boot
     # Dynamic fps
     chmod 644 /sys/devices/virtual/graphics/fb0/dynamic_fps
     chown system graphics /sys/devices/virtual/graphics/fb0/dynamic_fps
-
-    # Adaptive backlight
-    chown system system /sys/devices/mdss_dsi_panel/cabc
-    chmod 0660 /sys/devices/mdss_dsi_panel/cabc
 
     # For bridgemgr daemon to inform the USB driver of the correct transport
     chown radio radio /sys/class/android_usb/f_rmnet_smd_sdio/transport
@@ -422,6 +415,12 @@ service tad_static /system/bin/tad_static /dev/block/mmcblk0 1,16
     socket tad stream 0660 system system
     class core
 
+service taimport /system/bin/taimport
+    class late_start
+    user root
+    group system
+    oneshot
+
 service netmgrd /system/bin/netmgrd
     class main
 
@@ -586,6 +585,11 @@ service ta_qmi_service /system/bin/ta_qmi_service
     user root
     class main
 
+# Modem Log QMI service
+service mlog_qmi_service /system/bin/mlog_qmi_service
+    user root
+    class main
+
 # Thermal Manager service
 service thermanager /system/bin/thermanager /system/etc/thermanager.xml
     class main
@@ -633,6 +637,13 @@ service setup_fs /system/bin/setup_fs /dev/block/platform/msm_sdcc.1/by-name/use
 service charger /sbin/healthd -c
     class charger
     seclabel u:r:healthd:s0
+
+service tfa9890_amp /system/bin/tfa9890_amp
+    class main
+    user media
+    group audio
+    oneshot
+    ioprio rt 4
 
 on property:init.svc.surfaceflinger=running
     start ppd
