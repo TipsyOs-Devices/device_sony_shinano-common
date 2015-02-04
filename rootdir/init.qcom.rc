@@ -96,8 +96,6 @@ on fs
     chown system system /lta-label
     chmod 0555 /lta-label
 
-    chmod 0755 /data/etc
-
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
@@ -285,9 +283,6 @@ on post-fs-data
     # to observe dnsmasq.leases file for dhcp information of soft ap.
     chown dhcp dhcp /data/misc/dhcp
 
-    # Update WIFI MAC address
-    mkdir /data/misc/wifi/prima 0775 wifi wifi
-
     mkdir /data/credmgr 0700 system system
     mkdir /data/tombstones 0755 system system
     mkdir /data/tombstones/vendor 0755 system system
@@ -367,6 +362,9 @@ on post-fs-data
     chown media camera /sys/devices/sony_camera_1/info
     chmod 0770 /sys/devices/sony_camera_1/info
 
+    # Used by taimport for MAC addresses
+    mkdir /data/etc
+
 on charger
     # Enable Power modes and set the CPU Freq Sampling rates
     write /sys/module/lpm_levels/enable_low_power/l2 2
@@ -395,12 +393,6 @@ on charger
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
 
-# Update Wi-Fi MAC address
-service mac-update /system/bin/mac-update
-    class late_start
-    user wifi
-    oneshot
-
 # QMUX must be in multiple groups to support external process connections
 service qmuxd /system/bin/qmuxd
     class main
@@ -416,10 +408,9 @@ service tad_static /system/bin/tad_static /dev/block/mmcblk0 1,16
     class core
 
 service taimport /system/bin/taimport
-    class late_start
+    class main
     user root
     group system
-    oneshot
 
 service netmgrd /system/bin/netmgrd
     class main
