@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
-
 # inherit from msm8974-common
 $(call inherit-product, device/sony/msm8974-common/msm8974.mk)
 
@@ -46,6 +44,7 @@ PRODUCT_COPY_FILES += \
     $(COMMON_PATH)/rootdir/twrp.fstab:recovery/root/etc/twrp.fstab \
     $(COMMON_PATH)/rootdir/init.qcom.rc:root/init.qcom.rc \
     $(COMMON_PATH)/rootdir/init.recovery.qcom.rc:root/init.recovery.qcom.rc \
+    $(COMMON_PATH)/rootdir/init.sony.usb.rc:root/init.sony.usb.rc \
     $(COMMON_PATH)/rootdir/ueventd.qcom.rc:root/ueventd.qcom.rc
 
 # Recovery
@@ -63,13 +62,11 @@ PRODUCT_PACKAGES += \
     libantradio
 
 # Audio
-PRODUCT_PACKAGES += \
-     tfa9890_amp
-#    libaudioamp
-
-# Audio configuration
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/audio/audio_platform_info.xml:system/etc/audio_platform_info.xml
+    $(COMMON_PATH)/audio/audio_platform_info.xml:system/etc/audio_platform_info.xml
+
+PRODUCT_PACKAGES += \
+    tfa9890_amp
 
 # Bluetooth
 PRODUCT_COPY_FILES += \
@@ -121,11 +118,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     charger_res_images
 
-# Qualcomm Random Number Generator
-PRODUCT_PACKAGES += \
-    qrngd \
-    qrngp
-
 # USB
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
@@ -133,9 +125,6 @@ PRODUCT_PACKAGES += \
 # Set default USB interface
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp
-
-# We have enough storage space to hold precise GC data
-PRODUCT_TAGS += dalvik.gc.type-precise
 
 # Audio offload
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -186,11 +175,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # HDMI
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.demo.hdmirotationlock=false
-
-# MDP
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.mdpcomp.logs=0 \
-    debug.mdpcomp.4k2kSplit=true
 
 # Time
 PRODUCT_PROPERTY_OVERRIDES += \
