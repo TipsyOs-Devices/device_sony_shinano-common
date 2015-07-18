@@ -17,6 +17,11 @@ const char *mr_init_devices[] = {
     "/sys/block/mmcblk0",
     "/sys/module/mmc_core",
     "/sys/module/mmcblk",
+    
+    // You look like SD Card and external USB Stuff
+    "/devices/msm_sdcc.2/mmc_host*",
+    "/devices/msm_sdcc.3/mmc_host*",
+    "/devices/platform/xhci-hcd",
 
     "/sys/bus*",
     "/sys/devices*",
