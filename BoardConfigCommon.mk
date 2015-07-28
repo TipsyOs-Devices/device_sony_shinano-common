@@ -99,6 +99,7 @@ BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2671771648
 # Recovery
 TARGET_RECOVERY_FSTAB := device/sony/shinano-common/rootdir/fstab.qcom
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
+<<<<<<< HEAD
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 
@@ -140,3 +141,12 @@ MR_FSTAB := device/sony/shinano-common/multirom/twrp.fstab
 MR_USE_MROM_FSTAB := true
 MR_QCOM_OVERLAY_CUSTOM_PIXEL_FORMAT := MDP_RGBX_8888
 MR_PIXEL_FORMAT := "RGBX_8888"
+
+# F2FS filesystem
+TARGET_USERIMAGES_USE_F2FS := true
+PRODUCT_PACKAGES += \
+    mkfs.f2fs \
+    fsck.f2fs \
+    fibmap.f2fs \
+    f2fstat
+
