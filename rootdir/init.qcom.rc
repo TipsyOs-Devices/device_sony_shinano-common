@@ -263,6 +263,9 @@ on boot
     chmod 0644 /sys/class/power_supply/battery/input_current_trim
     chmod 0644 /sys/class/power_supply/battery/voltage_min
 
+    # thermananger
+    chmod 0644 /sys/class/power_supply/usb/current_max
+
     chown system system /sys/devices/virtual/graphics/fb0/rgb
     chmod 0660 /sys/devices/virtual/graphics/fb0/rgb
 
@@ -596,13 +599,6 @@ service time_daemon /system/bin/time_daemon
     class late_start
     user root
     group root radio qcom_diag
-
-# create filesystem if necessary
-service setup_fs /system/bin/setup_fs /dev/block/platform/msm_sdcc.1/by-name/userdata
-    class core
-    user root
-    group root
-    oneshot
 
 service charger /sbin/healthd -c
     class charger
