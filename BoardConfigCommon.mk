@@ -138,4 +138,4 @@ MR_DPI_FONT := 340
 MR_FSTAB := device/sony/shinano-common/rootdir/twrp.fstab
 MR_USE_MROM_FSTAB := true
 MR_KEXEC_MEM_MIN := 0x03000000
-
+MR_QCOM_OVERLAY_CUSTOM_PIXEL_FORMAT := MDP_RGBX_8888
