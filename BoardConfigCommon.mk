@@ -124,6 +124,8 @@ TW_INCLUDE_FUSE_EXFAT := true
 TW_BRIGHTNESS_PATH := /sys/class/leds/wled:backlight/brightness
 TW_MAX_BRIGHTNESS := 4095
 TW_NO_USB_STORAGE := true
+TW_NO_SCREEN_BLANK := true
+TARGET_USERIMAGES_USE_F2FS := true
 
 # Releasetools
 TARGET_RELEASETOOLS_EXTENSIONS := device/sony/shinano-common
@@ -133,9 +135,8 @@ MR_INPUT_TYPE := type_b
 MR_INIT_DEVICES := device/sony/shinano-common/multirom/init_devices.c
 MR_USE_QCOM_OVERLAY := true
 MR_QCOM_OVERLAY_HEADER := device/sony/shinano-common/multirom/framebuffer_qcom_overlay.h
-MR_DPI := hdpi
-MR_DPI_FONT := 340
-MR_FSTAB := device/sony/shinano-common/rootdir/twrp.fstab
+MR_KEXEC_DTB := true
+MR_FSTAB := device/sony/shinano-common/multirom/twrp.fstab
 MR_USE_MROM_FSTAB := true
-MR_KEXEC_MEM_MIN := 0x03000000
 MR_QCOM_OVERLAY_CUSTOM_PIXEL_FORMAT := MDP_RGBX_8888
+MR_PIXEL_FORMAT := "RGBX_8888"
