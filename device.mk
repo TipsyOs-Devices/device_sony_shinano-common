@@ -133,8 +133,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     com.android.nfc_extras \
     NfcNci \
-    Tag \
-    nfc_nci.msm8974
+    Tag
 
 # GPS
 PRODUCT_PACKAGES += \
@@ -162,7 +161,7 @@ PRODUCT_PACKAGES += \
     camera.msm8974
 
 PRODUCT_PACKAGES += \
-    keystore.msm8974
+    keystore.msm8994
 
 # Misc
 PRODUCT_PACKAGES += \
@@ -193,10 +192,6 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
     libemoji
-
-# BoringSSL hacks
-PRODUCT_PACKAGES += \
-    libboringssl-compat
 
 # APN list
 PRODUCT_COPY_FILES += \
