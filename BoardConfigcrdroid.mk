@@ -15,6 +15,9 @@
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "vfs-prerelease"
 
+# crDroid SELinux
+-include vendor/crdroid/sepolicy/qcom/sepolicy.mk
+
 # Kernel
 BOARD_CUSTOM_BOOTIMG := true
 BOARD_CUSTOM_BOOTIMG_MK := device/sony/shinano/boot/custombootimg.mk
