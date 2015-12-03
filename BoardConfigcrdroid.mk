@@ -30,5 +30,4 @@ BOARD_NFC_CHIPSET := pn547
 # Recovery
 BOARD_RECOVERY_SWIPE := true
 TARGET_NO_SEPARATE_RECOVERY := true
-TARGET_RECOVERY_FSTAB := device/sony/shinano/rootdir/fstab.shinano
 TARGET_RECOVERY_PIXEL_FORMAT := "RGB_565"
